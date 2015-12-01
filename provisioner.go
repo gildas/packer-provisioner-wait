@@ -2,6 +2,7 @@ package main
 
 import ( // {{{
   "fmt"
+  "log"
   "time"
   "os"
 
@@ -13,10 +14,33 @@ import ( // {{{
 type config struct { // {{{
   common.PackerConfig `mapstructure:",squash"`
 
+  // Either:
+  // 1. Duration: we wait for a duration, simple
   RawDuration string `mapstructure:"duration"`
   duration time.Duration
 
-  // The Message to display in packer
+  // 2. Until: until a script/shell is true
+  //    "until": { "type": "powershell", "inline": [ "if ($ready) { exit 0 } else { exit 1 }" ] },
+
+  // 3. While: while a script/shell is false
+  //    "while": { "type": "powershell", "inline": [ "if ($ready) { exit 0 } else { exit 1 }" ] },
+
+  // between 2 tests, sleep for the given duration
+  //    "sleep": "1m",
+  Sleep string `mapstructure:"sleep"`
+  sleep time.Duration
+
+  // and run the test a maximum of times
+  //    "tries": "60",
+  Tries int
+
+  // when we get a success, execute a script/shell (as soon as we get out of the loop)
+  //    "on_success": { "type": "powershell", "inline": [ "Write-Output 'Software is installed!'" ] }
+
+  // After all tries failed, execute a script/shell
+  //    "on_failure": { "type": "powershell", "script": "./scripts/Backup-Logs.ps1" },
+
+  // Display a Message before starting
   Message string
 
   // The configuration template
